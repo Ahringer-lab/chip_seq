@@ -105,7 +105,7 @@ INPUT="sample_sheet.csv"
 sed -i '/^[[:space:]]*$/d' $INPUT
 sed -i 's/\r$//' $INPUT
 
-COUNTER=0
+cp ${INPUT} ${analysis_out_dir}/Sample_sheet_${RUNID}.log
 
 while IFS= read -r LINE 
 do
@@ -116,25 +116,11 @@ do
     FASTQ=${ARRAYLINE[0]}
     SAMPLE_NAME=${ARRAYLINE[1]}
 
+    
+
 #Loops through the fastq names, make directories for each output, ${base} holds the sample id (TODO Chane $base to something else)
-    echo "Fastq file being analysed"
-    echo "${FASTQ}${MERGEID}_R1_001.fastq.gz"
-    echo "${FASTQ}${MERGEID}_R2_001.fastq.gz"
-    echo "Sample ID being used"
-    echo ${SAMPLE_NAME}
 
     srun --mem=10000MB --cpus-per-task=6 --ntasks=1 ./chip_seq_pipeline.bash --fastqid ${FASTQ} --sample_id ${SAMPLE_NAME} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --bowtie_index ${BOWTIE_INDEX} &
-
-    #Jobs are submitted to the hpc up to the upper job limit.
-    COUNTER=$(( COUNTER + 1 ))
-    echo $COUNTER
-    if [ "$COUNTER" -ge "$JOBS" ]; then
-        echo "Maximum number of pipelines are running ($JOBS), waiting for them to finish"
-        wait
-        unset COUNTER
-        echo "Running the next group of pipelines now"
-        COUNTER=0
-    fi
 
 done < ${INPUT}
 
@@ -145,25 +131,6 @@ wait
 cd ${analysis_out_dir}
 multiqc .
 
-Make the summary stats file
-cd ${analysis_out_dir}/stats
-echo \#Run ID\: ${RUNID} > summary_stats.txt
-echo -n Sample_name, >> summary_stats.txt
-awk 'FNR==3{printf $0 >> "summary_stats.txt"}' *
-echo "" >> summary_stats.txt
-echo -n Forward_fastq, >> summary_stats.txt
-awk 'FNR==4{printf $0 >> "summary_stats.txt"}' *
-echo "" >> summary_stats.txt
-echo -n Reverse_fastq, >> summary_stats.txt
-awk 'FNR==5{printf $0 >> "summary_stats.txt"}' *
-echo "" >> summary_stats.txt
-echo -n Aligned_reads, >> summary_stats.txt
-awk 'FNR==6{printf $0 >> "summary_stats.txt"}' *
-echo "" >> summary_stats.txt
-echo -n Q30_Aligned_reads, >> summary_stats.txt
-awk 'FNR==7{printf $0 >> "summary_stats.txt"}' *
-echo "" >> summary_stats.txt
-echo -n Q10_Aligned_reads, >> summary_stats.txt
-awk 'FNR==8{printf $0 >> "summary_stats.txt"}' *
-sed 's/.$//' summary_stats.txt >> summary_stats.csv
-rm summary_stats.txt
+#Make the summary stats file
+cd ${WD}
+srun --nodes=1 --mem=5000MB --cpus-per-task=6 --ntasks=1 ./stats.bash --input ${analysis_out_dir} --id ${RUNID}
