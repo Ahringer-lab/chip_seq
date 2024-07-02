@@ -29,13 +29,13 @@ CALLPEAKS="true"
 
 # Function to handle incorrect arguments
 function exit_with_bad_args {
-    echo "Usage: bash lane_merger.bash optional args: --fastqid <fastq suffix> --sample_id <sample_id> --threads <number of threads> --input <input path> --id <Run ID>  --mergeID <merge ID> --bowtieindex>" 
+    echo "Usage: bash lane_merger.bash optional args: --fastqid <fastq suffix> --sampleid <sample_id> --threads <number of threads> --input <input path> --id <Run ID>  --mergeID <merge ID> --bowtieindex>" 
     echo "Invalid arguments provided" >&2
     exit # this stops the terminal closing when run as source
 }
 
 #Set the possible input options
-options=$(getopt -o '' -l fastqid: -l sample_id: -l threads: -l input: -l id: -l mergeID: -l bowtieindex: "$@") || exit_with_bad_args
+options=$(getopt -o '' -l fastqid: -l sampleid: -l threads: -l input: -l id: -l mergeID: -l bowtieindex: "$@") || exit_with_bad_args
 
 #Get the inputs
 eval set -- "$options"
@@ -45,7 +45,7 @@ while true; do
             shift
             FASTQ_ID="$1"
             ;;
-        --sample_id)
+        --sampleid)
             shift
             base="$1"
             ;;
