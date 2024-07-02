@@ -4,6 +4,7 @@
 ############################## bulk rna-seq bash pipeline #####################################################################################
 # This code will carryout alignment of the control samples if required, the resulting bams can then be used across multiple treated samples
 # This script can be used on its own if you just want to get bams for control samples
+# This script would form part of a full pipeline
 ###############################################################################################################################################
 
 #Set the defaults
@@ -34,10 +35,6 @@ while true; do
             shift
             FASTQ_ID="$1"
             ;;
-        --sample_id)
-            shift
-            base="$1"
-            ;;
         --threads)
             shift
             THREADS="$1"
@@ -67,19 +64,19 @@ while true; do
 done
 
 #Set up stats file
-STATSFILECONTROL=${analysis_out_dir}/control/stats-${base}.csv
+STATSFILECONTROL=${analysis_out_dir}/control/stats-${FASTQ_ID}.csv
 echo \#Run ID,${RUNID} >> $STATSFILECONTROL
 echo \# >> $STATSFILECONTROL
 echo ${base}, >> $STATSFILECONTROL
 
 #Gather fastq read numbers and add to stats file
-R1count=$(( $(gunzip -c ${analysis_out_dir}/${base}/fastq/*R1_*.fastq.gz|wc -l)/4|bc ))
-R2count=$(( $(gunzip -c ${analysis_out_dir}/${base}/fastq/*R2_*.fastq.gz|wc -l)/4|bc ))
+R1count=$(( $(gunzip -c ${analysis_out_dir}/control/fastq/*R1_*.fastq.gz|wc -l)/4|bc ))
+R2count=$(( $(gunzip -c ${analysis_out_dir}/control/fastq/*R2_*.fastq.gz|wc -l)/4|bc ))
 echo ${R1count}, >> $STATSFILECONTROL
 echo ${R2count}, >> $STATSFILECONTROL
 
 #Carry out trimgalore (includes fastqc)
-trim_galore --fastqc ${analysis_out_dir}/${base}/fastq/${FASTQ_ID}${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${FASTQ_ID}${MERGEID}_R2_001.fastq.gz \
+trim_galore --fastqc ${analysis_out_dir}/control/${FASTQ_ID}${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/control/fastq/${FASTQ_ID}${MERGEID}_R2_001.fastq.gz \
 -o ${analysis_out_dir}/${base}/trim_galore \
 -j ${THREADS}
 
@@ -90,10 +87,10 @@ fastq_screen ${trimmedfastq_dir}/*.fq.gz  \
 
 #Carry out BWA alignment
 echo "Carrying out BWA alignment"
-bwa mem -t ${THREADS} ${trimmedfastq_dir}/${FASTQ_ID}${MERGEID}_R*_001_trimmed.fq.gz > ${analysis_out_dir}/${base}/control/${base}.sam
+bwa mem -t ${THREADS} ${trimmedfastq_dir}/${FASTQ_ID}${MERGEID}_R*_001_trimmed.fq.gz > ${analysis_out_dir}/control/${base}.sam
 
 #Convert to bam, not currently downsampling to q10 by default, add as option?
-samtools view -@ ${THREADS} -b -h ${analysis_out_dir}/${base}/control/${base}.sam > ${analysis_out_dir}/${base}/control/${base}.bam
+samtools view -@ ${THREADS} -b -h ${analysis_out_dir}/${base}/control/${base}.sam > ${analysis_out_dir}/control/${base}.bam
 #samtools view -@ ${THREADS} -q 10 -b -h ${analysis_out_dir}/${base}/bwa/${base}.sam > ${analysis_out_dir}/${base}/bwa/${base}.q10.bam
 
 #Sort the bam file

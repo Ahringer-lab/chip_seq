@@ -12,8 +12,6 @@
 #      input = Change the path of the input fastq files, default is ~/data
 #      id = Change the name of the output folder, the default is a datestamp
 #      mergeID = If the file names have been merged differently the input can be changed here 'fastqid_<Add the flag here>_R1/R2_001.fastq.gz'
-#      star_index = The location of the STAR index
-#      kallisto_index = The location of the Kallisto index
 # The scripts lacks logs and error handling
 # Author Steve Walsh May 2024
 ################################################################################################################################################
@@ -31,13 +29,13 @@ CALLPEAKS="true"
 
 # Function to handle incorrect arguments
 function exit_with_bad_args {
-    echo "Usage: bash lane_merger.bash optional args: --fastqid <fastq suffix> --sample_id <sample_id> --threads <number of threads> --input <input path> --id <Run ID>  --mergeID <merge ID> --bowtieindex --callpeaks <true/false> --control <control for peak calling>" 
+    echo "Usage: bash lane_merger.bash optional args: --fastqid <fastq suffix> --sample_id <sample_id> --threads <number of threads> --input <input path> --id <Run ID>  --mergeID <merge ID> --bowtieindex>" 
     echo "Invalid arguments provided" >&2
     exit # this stops the terminal closing when run as source
 }
 
 #Set the possible input options
-options=$(getopt -o '' -l fastqid: -l sample_id: -l threads: -l input: -l id: -l mergeID: -l bowtieindex: -l callpeaks: -l control: "$@") || exit_with_bad_args
+options=$(getopt -o '' -l fastqid: -l sample_id: -l threads: -l input: -l id: -l mergeID: -l bowtieindex: "$@") || exit_with_bad_args
 
 #Get the inputs
 eval set -- "$options"
@@ -71,14 +69,6 @@ while true; do
             shift
             BOWTIE_INDEX="$1"
             ;;
-         --callpeaks)
-            shift
-            CALLPEAKS="$1"
-            ;;
-         --control)
-            shift
-            CONTROL="$1"
-            ;;
         --)
             shift
             break
@@ -97,6 +87,7 @@ fi
 echo "${FASTQ_ID}${MERGEID}_R1_001.fastq.gz"
 echo "${FASTQ_ID}${MERGEID}_R2_001.fastq.gz"
 
+
 analysis_out_dir=${outdir}/${RUNID}
 STATSFILE=${analysis_out_dir}/stats.csv
 
@@ -107,7 +98,6 @@ mkdir ${analysis_out_dir}/${base}/trim_galore
 trimmedfastq_dir=${analysis_out_dir}/${base}/trim_galore
 mkdir ${analysis_out_dir}/${base}/bwa
 mkdir ${analysis_out_dir}/${base}/fastq_screen
-mkdir ${analysis_out_dir}/${base}/macs2
 mkdir ${analysis_out_dir}/${base}/control
 cd ${analysis_out_dir}/${base}/fastq
 cp $fastq_dir/${FASTQ_ID}${MERGEID}_R*_001.fastq.gz .
@@ -173,34 +163,6 @@ Q10ALIGNEDNUMBER=$(head -n 1 <<< $Q10ALIGNEDREADSLIST)
 echo ${ALIGNEDNUMBER}, >> $STATSFILE
 echo ${Q30ALIGNEDNUMBER}, >> $STATSFILE
 echo ${Q10ALIGNEDREADS}, >> $STATSFILE
-
-#Carry out MACS peak calling
-
-if [[ ${CALLPEAKS == "true" } ]]; then
-    if [[ $CONTROL == "null"]];
-        echo "No control given, cannot peak call"
-    else
-    #Carry out BWA alignment for control samples
-    echo "Carrying out BWA alignment for conrol sample"
-    bwa mem -t ${THREADS} ${trimmedfastq_dir}/${CONTROL}${MERGEID}_R*_001_trimmed.fq.gz > ${analysis_out_dir}/${base}/control/${base}.sam
-
-    #Convert to bam, not currently downsampling to q10 by default, add as option?
-    samtools view -@ ${THREADS} -b -h ${analysis_out_dir}/${base}/control/${base}.sam > ${analysis_out_dir}/${base}/control/${base}.bam
-    #samtools view -@ ${THREADS} -q 10 -b -h ${analysis_out_dir}/${base}/bwa/${base}.sam > ${analysis_out_dir}/${base}/bwa/${base}.q10.bam
-
-    #Sort the bam file
-    samtools sort -@ ${THREADS} ${analysis_out_dir}/${base}/control/${base}.bam ${analysis_out_dir}/${base}/control/${base}.sorted.bam
-    #samtools sort -@ ${THREADS} ${analysis_out_dir}/${base}/bwa/${base}.q10.bam ${analysis_out_dir}/${base}/bwa/${base}.q10.sorted.bam
-
-    #Index the bam files
-    samtools index  ${analysis_out_dir}/${base}/control/${base}.sorted.bam
-    #samtools index  ${analysis_out_dir}/${base}/bwa/${base}.sorted.bam
-
-    #Clean up files
-    rm ${analysis_out_dir}/${base}/control/${base}.sam
-    rm ${analysis_out_dir}/${base}/control/${base}.bam
-    #rm ${analysis_out_dir}/${base}/bwa/${base}.q10.sam
-
 
     #Add alignment stats to stats file
     ALIGNEDREADS=$(samtools flagstat ${analysis_out_dir}/${base}/bwa/${base}.sorted.bam)

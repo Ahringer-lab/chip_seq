@@ -23,9 +23,10 @@
 #      input = Change the path of the input fastq files, default is ~/data
 #      id = Change the name of the parent pipeline output folder, the default is a datestamp
 #      mergeID = If the file names have been merged differently the input can be changed here 'fastqid_<Add the flag here>_R1/R2_001.fastq.gz'
-#      jobs = Changes the maximum number of jobs that are submitted to the cluster at once, this option should be used in conjunction with the slurm options above
 #      star_index = The location of the STAR index
 #      kallisto_index = The location of the Kallisto index
+# Currently this script will not proceed beyond the alignment step, I have added some groundwork for a full pipeline (Commented out)
+# Peak calling is run in another script but could be initiated here at some point.
 # Author Steve Walsh May 2024
 ###########################################################################################################################################################################
 
@@ -34,13 +35,12 @@ set -x
 #Set the defaults
 outdir=~/out
 fastq_dir=~/data/
-BOWTIE_INDEX=~/references/built_genomes/star/c.elegans.latest
+BOWTIE_INDEX=/mnt/home3/ahringer/index_files/built_indexes/bwa
 CHROM_SIZES=/mnt/home3/ahringer/index_files/genomes/c_elegans.PRJNA13758.WS285.genomic.chrom.sizes
 THREADS=1
 RUNID="PipelineRun-$(date '+%Y-%m-%d-%R')"
 MERGEID=merged
 WD="$(pwd)"
-JOBS=1
 
 # Function to handle incorrect arguments
 function exit_with_bad_args {
@@ -91,7 +91,39 @@ done
 #Set and create the ouput directory based on Run ID (Date/time if not set)
 analysis_out_dir=${outdir}/${RUNID}
 mkdir $analysis_out_dir
-echo "$analysis_out_dir"
+
+#Set sample sheet name and a counter for number of jobs to be sent to the hpc at once
+INPUT="sample_sheet.csv"
+
+#The code below reads in an updated sample sheet with the control bam or fastq files identified in the first two lines and aligns the control bam files
+#This would be the first step in fully automating this process
+
+#sed -i '/^[[:space:]]*$/d' $INPUT
+#sed -i 's/\r$//' $INPUT
+#CONTROL_TYPE=$(head -n 1 $INPUT)
+#sed -i '1d' $INPUT
+#CONTROL_FILE=$(head -n 1 $INPUT)
+#sed -i '1d' $INPUT
+
+#Check the sample sheet contains the control file
+#if [ ${CONTROL_TYPE} != "bam" ] && [ ${CONTROL_TYPE} != "fastq" ]; then
+#    echo "Sample sheet type not found or incorrect"
+#    exit 1
+#elif [ ${CONTROL_TYPE} == "null" ]; then
+#    echo "Sample sheet type not found or incorrect"
+##    exit 1
+#elif [[ ${CONTROL_FILE} == 'null' ]]; then
+    echo "Sample sheet not found or incorrect"
+    exit 1
+#fi
+
+#Generate the control bam file for peak calling
+#if [ ${CONTROL_TYPE} == "fastq" ]; then
+#    srun --nodes=1 --mem=15000MB --cpus-per-task=6 --ntasks=1 ./control.bash --fastqid ${CONTROL_FILE} --threads ${THREADS} --input ${analysis_out_dir} --id ${RUNID}
+#   CONTROL_FILE=${analysis_out_dir}/control/${CONTROL_FILE}.bam
+#done
+
+#From this point the script carried out quality control on the fastq files and aligns
 
 #Set up stats folder
 mkdir ${analysis_out_dir}/stats
@@ -99,11 +131,6 @@ mkdir ${analysis_out_dir}/stats
 MERGEID=_merged
 
 cd ${WD}
-
-#Set sample sheet name and a counter for number of jobs to be sent to the hpc at once
-INPUT="sample_sheet.csv"
-sed -i '/^[[:space:]]*$/d' $INPUT
-sed -i 's/\r$//' $INPUT
 
 cp ${INPUT} ${analysis_out_dir}/Sample_sheet_${RUNID}.log
 
