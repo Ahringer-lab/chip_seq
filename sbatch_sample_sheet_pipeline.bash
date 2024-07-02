@@ -44,7 +44,7 @@ WD="$(pwd)"
 
 # Function to handle incorrect arguments
 function exit_with_bad_args {
-    echo "Usage: bash lane_merger.bash optional args: --threads <number of threads> --input <input path> --id <Run ID>  --mergeID <merge ID> --jobs <Number of pairs of fastqs to run> --bowtie_index"
+    echo "Usage: bash chip_seq_alignment.bash optional args: --threads <number of threads> --input <input path> --id <Run ID>  --mergeID <merge ID> --jobs <Number of pairs of fastqs to run> --bowtie_index"
     echo "Invalid arguments provided" >&2
     exit # this stops the terminal closing when run as source
 }
@@ -113,8 +113,8 @@ INPUT="sample_sheet.csv"
 #    echo "Sample sheet type not found or incorrect"
 ##    exit 1
 #elif [[ ${CONTROL_FILE} == 'null' ]]; then
-    echo "Sample sheet not found or incorrect"
-    exit 1
+#    echo "Sample sheet not found or incorrect"
+#    exit 1
 #fi
 
 #Generate the control bam file for peak calling
@@ -147,7 +147,7 @@ do
 
 #Loops through the fastq names, make directories for each output, ${base} holds the sample id (TODO Chane $base to something else)
 
-    srun --mem=10000MB --cpus-per-task=6 --ntasks=1 ./chip_seq_alignment.bash --fastqid ${FASTQ} --sample_id ${SAMPLE_NAME} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --bowtie_index ${BOWTIE_INDEX} &
+    srun --mem=10000MB --cpus-per-task=6 --ntasks=1 ./chip_seq_alignment.bash --fastqid ${FASTQ} --sampleid ${SAMPLE_NAME} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --bowtie_index ${BOWTIE_INDEX} &
 
 #Carry out peak calling
 #Ideally the fastq file that have been aligned would be peak called here, this requires organising the control and treatment files correctly, see code above
