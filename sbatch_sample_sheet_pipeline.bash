@@ -50,7 +50,7 @@ function exit_with_bad_args {
 }
 
 #Set the possible input options
-options=$(getopt -o '' -l threads: -l input: -l id: -l mergeID -l jobs: -l bowtie_index -- "$@") || exit_with_bad_args
+options=$(getopt -o '' -l threads: -l input: -l id: -l mergeID -l jobs: -l bowtieindex: -- "$@") || exit_with_bad_args
 
 #Get the inputs
 eval set -- "$options"
@@ -76,7 +76,7 @@ while true; do
             shift
             JOBS="$1"
             ;;
-        --bowtie_index)
+        --bowtieindex)
             shift
             BOWTIE_INDEX="$1"
             ;;
@@ -147,7 +147,7 @@ do
 
 #Loops through the fastq names, make directories for each output, ${base} holds the sample id (TODO Chane $base to something else)
 
-    srun --mem=10000MB --cpus-per-task=6 --ntasks=1 ./chip_seq_alignment.bash --fastqid ${FASTQ} --sampleid ${SAMPLE_NAME} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --bowtie_index ${BOWTIE_INDEX} &
+    srun --mem=10000MB --cpus-per-task=6 --ntasks=1 ./chip_seq_alignment.bash --fastqid ${FASTQ} --sampleid ${SAMPLE_NAME} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --bowtieindex ${BOWTIE_INDEX} &
 
 #Carry out peak calling
 #Ideally the fastq file that have been aligned would be peak called here, this requires organising the control and treatment files correctly, see code above
