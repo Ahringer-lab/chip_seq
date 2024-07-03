@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --job-name=RNASeq  
-#SBATCH --nodes=6
-#SBATCH --ntasks=30
-#SBATCH --cpus-per-task=20
-#SBATCH --mem=100gb
+#SBATCH --nodes=1
+#SBATCH --ntasks=20
+#SBATCH --cpus-per-task=6
+#SBATCH --mem=50gb
 #SBATCH --partition=2004
 #SBATCH --output=pipeline_%j.log # Standard output and error log
 
@@ -35,12 +35,13 @@ set -x
 #Set the defaults
 outdir=~/out
 fastq_dir=~/data/
-BOWTIE_INDEX=/mnt/home3/ahringer/index_files/built_indexes/bwa
+BOWTIE_INDEX=/mnt/home3/ahringer/index_files/built_indexes/bwa/c_elegans.PRJNA13758.WS285/c_elegans.PRJNA13758.WS285.genomic.fa
 CHROM_SIZES=/mnt/home3/ahringer/index_files/genomes/c_elegans.PRJNA13758.WS285.genomic.chrom.sizes
 THREADS=1
 RUNID="PipelineRun-$(date '+%Y-%m-%d-%R')"
 MERGEID=merged
 WD="$(pwd)"
+SAMPLE_NAME=null
 
 # Function to handle incorrect arguments
 function exit_with_bad_args {
