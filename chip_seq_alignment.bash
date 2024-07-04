@@ -98,6 +98,7 @@ mkdir ${analysis_out_dir}/${base}/trim_galore
 trimmedfastq_dir=${analysis_out_dir}/${base}/trim_galore
 mkdir ${analysis_out_dir}/${base}/bwa
 mkdir ${analysis_out_dir}/${base}/fastq_screen
+mkdir ${analysis_out_dir}/bw
 #mkdir ${analysis_out_dir}/${base}/control
 cd ${analysis_out_dir}/${base}/fastq
 cp $fastq_dir/${FASTQ_ID}${MERGEID}_R*_001.fastq.gz .
@@ -143,8 +144,8 @@ samtools index  ${analysis_out_dir}/${base}/bwa/${base}.sorted.bam
 #samtools index  ${analysis_out_dir}/${base}/bwa/${base}.sorted.bam
 
 #Clean up files
-#rm ${analysis_out_dir}/${base}/bwa/${base}.sam
-#rm ${analysis_out_dir}/${base}/bwa/${base}.bam
+rm ${analysis_out_dir}/${base}/bwa/${base}.sam
+rm ${analysis_out_dir}/${base}/bwa/${base}.bam
 #rm ${analysis_out_dir}/${base}/bwa/${base}.q10.sam
 
 
@@ -179,4 +180,8 @@ echo ${Q10ALIGNEDREADS}, >> $STATSFILE
     echo ${ALIGNEDNUMBER}, >> $STATSFILE
     echo ${Q30ALIGNEDNUMBER}, >> $STATSFILE
     echo ${Q10ALIGNEDREADS}, >> $STATSFILE
+
+    #Get the bw files using deeptools
+
+    bamCoverage -p ${THREADS} -b ${analysis_out_dir}/${base}/bwa/${base}.sorted.bam -o ${analysis_out_dir}/bw/${base}.bw
  
