@@ -14,7 +14,7 @@
 #      fastqid = This is the fastq file name without _R1/2_001.fastq.gz
 #      mergeID = If the file names have been merged differently the input can be changed here 'fastqid_<Add the flag here>_R1/R2_001.fastq.gz'
 #      id = This is the name for the pipeline run and becomes the parent folder id, if nothing is given a date/time stamp is used
-#      bwaindex = The folder where the build bwa index is located, the default is the Ahringer built genomes omoes folder for bwa
+#      bwaindex = The folder where the build bwa index is located, the default is the Ahringer built genomes genomes folder for bwa
 # The scripts lacks logs and error handling
 # Author Steve Walsh May 2024
 ################################################################################################################################################
