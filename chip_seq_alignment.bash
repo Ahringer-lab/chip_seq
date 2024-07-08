@@ -14,7 +14,7 @@
 #      fastqid = This is the fastq file name without _R1/2_001.fastq.gz
 #      mergeID = If the file names have been merged differently the input can be changed here 'fastqid_<Add the flag here>_R1/R2_001.fastq.gz'
 #      id = This is the name for the pipeline run and becomes the parent folder id, if nothing is given a date/time stamp is used
-#      bowtieindex = The folder where the build bowtie index is located, the default is the Ahringer built genomes omoes folder for bwa
+#      bwaindex = The folder where the build bwa index is located, the default is the Ahringer built genomes omoes folder for bwa
 # The scripts lacks logs and error handling
 # Author Steve Walsh May 2024
 ################################################################################################################################################
@@ -22,7 +22,7 @@
 #Set the defaults
 outdir=~/out
 fastq_dir=~/data/
-BOWTIE_INDEX=/mnt/home3/ahringer/index_files/built_indexes/bwa/c_elegans.PRJNA13758.WS285/c_elegans.PRJNA13758.WS285.genomic.fa
+BWA_INDEX=/mnt/home3/ahringer/index_files/built_indexes/bwa/c_elegans.PRJNA13758.WS285/c_elegans.PRJNA13758.WS285.genomic.fa
 CHROM_SIZES=/mnt/home3/ahringer/index_files/genomes/c_elegans.PRJNA13758.WS285.genomic.chrom.sizes
 THREADS=1
 RUNID="PipelineRun-$(date '+%Y-%m-%d-%R')"
@@ -31,13 +31,13 @@ base=null
 
 # Function to handle incorrect arguments
 function exit_with_bad_args {
-    echo "Usage: bash lane_merger.bash optional args: --fastqid <fastq suffix> --sampleid <sample_id> --threads <number of threads> --input <input path> --id <Run ID>  --mergeID <merge ID> --bowtieindex>" 
+    echo "Usage: bash lane_merger.bash optional args: --fastqid <fastq suffix> --sampleid <sample_id> --threads <number of threads> --input <input path> --id <Run ID>  --mergeID <merge ID> --bwaindex>" 
     echo "Invalid arguments provided" >&2
     exit # this stops the terminal closing when run as source
 }
 
 #Set the possible input options
-options=$(getopt -o '' -l fastqid: -l sampleid: -l threads: -l input: -l id: -l mergeID: -l bowtieindex: -- "$@") || exit_with_bad_args
+options=$(getopt -o '' -l fastqid: -l sampleid: -l threads: -l input: -l id: -l mergeID: -l bwaindex: -- "$@") || exit_with_bad_args
 
 #Get the inputs
 eval set -- "$options"
@@ -67,9 +67,9 @@ while true; do
             shift
             MERGEID="$1"
             ;;
-        --bowtieindex)
+        --bwaindex)
             shift
-            BOWTIE_INDEX="$1"
+            BWA_INDEX="$1"
             ;;
         --)
             shift
@@ -131,7 +131,7 @@ fastq_screen ${trimmedfastq_dir}/*.fq.gz  \
 
 #Carry out BWA alignment
 echo "Carrying out BWA alignment"
-bwa mem -t ${THREADS} ${BOWTIE_INDEX} ${analysis_out_dir}/${base}/fastq/${FASTQ_ID}${MERGEID}_R1_001.fastq.gz > ${analysis_out_dir}/${base}/bwa/${base}.sam
+bwa mem -t ${THREADS} ${BWA_INDEX} ${analysis_out_dir}/${base}/fastq/${FASTQ_ID}${MERGEID}_R1_001.fastq.gz > ${analysis_out_dir}/${base}/bwa/${base}.sam
 
 #Convert to bam, not currently downsampling to q10 by default, add as option, currnetly only full bamis kept?
 samtools view -@ ${THREADS} -b -h ${analysis_out_dir}/${base}/bwa/${base}.sam > ${analysis_out_dir}/${base}/bwa/${base}.bam
