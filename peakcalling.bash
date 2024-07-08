@@ -29,11 +29,9 @@ set -x
 #Set the defaults
 outdir=~/out
 bam_dir=~/data/
-BOWTIE_INDEX=/mnt/home3/ahringer/index_files/built_indexes/bwa
 CHROM_SIZES=/mnt/home3/ahringer/index_files/genomes/c_elegans.PRJNA13758.WS285.genomic.chrom.sizes
 THREADS=1
 RUNID="PipelineRun-$(date '+%Y-%m-%d-%R')"
-MERGEID=merged
 WD="$(pwd)"
 
 # Function to handle incorrect arguments
@@ -44,7 +42,7 @@ function exit_with_bad_args {
 }
 
 #Set the possible input options
-options=$(getopt -o '' -l threads: -l input: -l id: -l mergeID -l jobs: -l bowtie_index -- "$@") || exit_with_bad_args
+options=$(getopt -o '' -l threads: -l input: -l id: -- "$@") || exit_with_bad_args
 
 #Get the inputs
 eval set -- "$options"
@@ -62,18 +60,6 @@ while true; do
             shift
             RUNID="$1"
             ;;
-        --mergeID)
-            shift
-            MERGEID="$1"
-            ;;
-        --jobs)
-            shift
-            JOBS="$1"
-            ;;
-        --bowtie_index)
-            shift
-            BOWTIE_INDEX="$1"
-            ;;
          --)
             shift
             break
@@ -84,6 +70,7 @@ done
 
 INPUT="sample_sheet_macs2.csv"
 
+#Get the control bam file from the first line of bam sample sheet
 CONTROL_FILE=$(head -n 1 $INPUT)
 sed -i '1d' $INPUT
 
@@ -94,11 +81,12 @@ mkdir ${analysis_out_dir}/MACS2
 while IFS= read -r LINE 
 do
 
-    # split line into array using tab delimitator - 0: FASTQ: FASTQ FILE SAMPLE_NAME: Name of sample (If changing from fastq file name)
+    # split line into array using , delimitator
     #echo ${var1}
     ARRAYLINE=(${LINE//,/ })
     BAM_FILE=${ARRAYLINE[0]}
 
+    #Make directories for the peak call fileds as we go
     mkdir ${analysis_out_dir}/MACS2/${BAM_FILE}
     cd ${analysis_out_dir}/MACS2/${BAM_FILE}
 
