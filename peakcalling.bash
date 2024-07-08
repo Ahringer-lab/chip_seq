@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --job-name=RNASeq  
-#SBATCH --nodes=6
-#SBATCH --ntasks=30
-#SBATCH --cpus-per-task=20
-#SBATCH --mem=100gb
+#SBATCH --nodes=1
+#SBATCH --ntasks=20
+#SBATCH --cpus-per-task=12
+#SBATCH --mem=50gb
 #SBATCH --partition=2004
 #SBATCH --output=pipeline_%j.log # Standard output and error log
 
@@ -36,7 +36,7 @@ WD="$(pwd)"
 
 # Function to handle incorrect arguments
 function exit_with_bad_args {
-    echo "Usage: bash lane_merger.bash optional args: --threads <number of threads> --input <input path> --id <Run ID>  --mergeID <merge ID> --jobs <Number of pairs of fastqs to run> --bowtie_index"
+    echo "Usage: bash lane_merger.bash optional args: --threads <number of threads> --input <input path> --id <Run ID>"
     echo "Invalid arguments provided" >&2
     exit # this stops the terminal closing when run as source
 }
@@ -90,7 +90,7 @@ do
     mkdir ${analysis_out_dir}/MACS2/${BAM_FILE}
     cd ${analysis_out_dir}/MACS2/${BAM_FILE}
 
-    srun --mem=10000MB --cpus-per-task=6 --ntasks=1 macs2 callpeak -c ${bam_dir}/${CONTROL_FILE}.sorted.bam -t ${bam_dir}/${BAM_FILE}.sorted.bam -f BAM --threads ${THREADS} -n ${BAM_FILE} &
+    srun --mem=10000MB --cpus-per-task=6 --ntasks=1 macs2 callpeak -c ${bam_dir}/${CONTROL_FILE}.sorted.bam -t ${bam_dir}/${BAM_FILE}.sorted.bam -f BAM -n ${BAM_FILE} &
 
 done < ${INPUT}
 
