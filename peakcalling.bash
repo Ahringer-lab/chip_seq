@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=RNASeq  
+#SBATCH --job-name=CHIPseq
 #SBATCH --nodes=1
 #SBATCH --ntasks=20
 #SBATCH --cpus-per-task=12
@@ -9,22 +9,23 @@
 
 ##########################################################################################################################################################################
 ############################## bulk rna-seq sbatch job submission script with a sample sheet #############################################################################
-# This code will gather all the bam file names listed in the sample sheet from the input folder into an array to initiate pipeline runs for each one in the HPC
+# This code will gather all the bam file names listed in the bam sample sheet from the input folder into an array to initiate pipeline runs for each one in the HPC
 # The control bam is entered at the top of the sample sheet
 # *****This script ideally should be initiated from the main pipeline but this requires further work**********
 # The script creates a parent directory with the run ID, this is a date/time stamp unless specified as an option
-# The script will create a folder for each pair of fastq files with the fastq id as it's name within the parent folder
-# Remember to change the SBATCH options above to configure for your run, ntasks should be the number of fastq pairs
+# The script will create a folder for each bam file with the bam id as it's name within the parent folder
+# Remember to change the SBATCH options above to configure for your run
 # This script should only be run on the HPC using sbatch
 # Options include:
-#      threads = Will multi-thread any process to this number
+#      threads = Will multi-thread any process to this number - Not currently used
 #      input = Change the path of the input fastq files, default is ~/data
 #      id = Change the name of the parent pipeline output folder, the default is a datestamp
-#      mergeID = If the file names have been merged differently the input can be changed here 'fastqid_<Add the flag here>_R1/R2_001.fastq.gz'
+# This only uses the default macs2 settings, options can be added as required
 # Author Steve Walsh May 2024
 ###########################################################################################################################################################################
 
-set -x
+#Uncomment below for debugging
+#set -x
 
 #Set the defaults
 outdir=~/out

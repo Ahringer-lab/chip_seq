@@ -23,14 +23,14 @@
 #      input = Change the path of the input fastq files, default is ~/data
 #      id = Change the name of the parent pipeline output folder, the default is a datestamp
 #      mergeID = If the file names have been merged differently the input can be changed here 'fastqid_<Add the flag here>_R1/R2_001.fastq.gz'
-#      star_index = The location of the STAR index
-#      kallisto_index = The location of the Kallisto index
 # Currently this script will not proceed beyond the alignment step, I have added some groundwork for a full pipeline (Commented out)
 # Peak calling is run in another script but could be initiated here at some point.
+# The option to merge bam file could be added in and handled via the sample sheet
 # Author Steve Walsh May 2024
 ###########################################################################################################################################################################
 
-set -x
+#Uncomment below for debugging
+#set -x
 
 #Set the defaults
 outdir=~/out
@@ -45,13 +45,13 @@ SAMPLE_NAME=null
 
 # Function to handle incorrect arguments
 function exit_with_bad_args {
-    echo "Usage: bash chip_seq_alignment.bash optional args: --threads <number of threads> --input <input path> --id <Run ID>  --mergeID <merge ID> --jobs <Number of pairs of fastqs to run> --bowtie_index"
+    echo "Usage: bash chip_seq_alignment.bash optional args: --threads <number of threads> --input <input path> --id <Run ID> --mergeID <merge ID> --bowtie_index"
     echo "Invalid arguments provided" >&2
     exit # this stops the terminal closing when run as source
 }
 
 #Set the possible input options
-options=$(getopt -o '' -l threads: -l input: -l id: -l mergeID -l jobs: -l bowtieindex: -- "$@") || exit_with_bad_args
+options=$(getopt -o '' -l threads: -l input: -l id: -l mergeID -l bowtieindex: -- "$@") || exit_with_bad_args
 
 #Get the inputs
 eval set -- "$options"
@@ -73,10 +73,6 @@ while true; do
             shift
             MERGEID="$1"
             ;;
-        --jobs)
-            shift
-            JOBS="$1"
-            ;;
         --bowtieindex)
             shift
             BOWTIE_INDEX="$1"
@@ -96,9 +92,11 @@ mkdir $analysis_out_dir
 #Set sample sheet name and a counter for number of jobs to be sent to the hpc at once
 INPUT="sample_sheet.csv"
 
-#The code below reads in an updated sample sheet with the control bam or fastq files identified in the first two lines and aligns the control bam files
+#****The code below reads in an updated sample sheet with the control bam or fastq files identified in the first two lines and aligns the control bam files****
 #This would be the first step in fully automating this process
+#The pipeline should either take fastq file or a bam for the control
 
+#Get the control file and determine if it is in bam or fastq format
 #sed -i '/^[[:space:]]*$/d' $INPUT
 #sed -i 's/\r$//' $INPUT
 #CONTROL_TYPE=$(head -n 1 $INPUT)
@@ -118,13 +116,13 @@ INPUT="sample_sheet.csv"
 #    exit 1
 #fi
 
-#Generate the control bam file for peak calling
+#Generate the control bam file for peak calling if fastq files are given as an input
 #if [ ${CONTROL_TYPE} == "fastq" ]; then
 #    srun --nodes=1 --mem=15000MB --cpus-per-task=6 --ntasks=1 ./control.bash --fastqid ${CONTROL_FILE} --threads ${THREADS} --input ${analysis_out_dir} --id ${RUNID}
 #   CONTROL_FILE=${analysis_out_dir}/control/${CONTROL_FILE}.bam
 #done
 
-#From this point the script carried out quality control on the fastq files and aligns
+#From this point the script carries out quality control on the fastq files and aligns
 
 #Set up stats folder
 mkdir ${analysis_out_dir}/stats

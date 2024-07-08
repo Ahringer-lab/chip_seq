@@ -5,6 +5,7 @@
 # This code will carryout alignment of the control samples if required, the resulting bams can then be used across multiple treated samples
 # This script can be used on its own if you just want to get bams for control samples
 # This script would form part of a full pipeline
+# This would be run before alignment of the treated bam files
 ###############################################################################################################################################
 
 #Set the defaults

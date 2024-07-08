@@ -1,8 +1,8 @@
 #!/bin/bash
 
 ###############################################################################################################################################
-############################## bulk rna-seq bash pipeline #####################################################################################
-# This code will carryout a basic bulk rna-seq analysis pipeline for a pair of fastq files or pairs of fastq files fed from the sbatch script
+############################## chip seq bash pipeline #####################################################################################
+# This code will carryout a basic chip-seq analysis pipeline for a pair of fastq files or pairs of fastq files fed from the sbatch script
 # The pipeline can be initiated on the HPC using srun or locally with bash
 # The pipeline assumes fastq file have been merged using the bash script on github
 # The plan going forward is to implement Ahringer pipelines in Nextflow so this will not be developed beyond a basic workflow.
@@ -10,8 +10,11 @@
 #      fastqid = The fastq file id, i.e. the start of the standard file namme without _merged_L1/2_001.fastq.gz
 #      threads = Will multi-thread any process to this number
 #      input = Change the path of the input fastq files, default is ~/data
-#      id = Change the name of the output folder, the default is a datestamp
+#      sampleid = This can be used to change the output file names, this is added to the fastq file id
+#      fastqid = This is the fastq file name without _R1/2_001.fastq.gz
 #      mergeID = If the file names have been merged differently the input can be changed here 'fastqid_<Add the flag here>_R1/R2_001.fastq.gz'
+#      id = This is the name for the pipeline run and becomes the parent folder id, if nothing is given a date/time stamp is used
+#      bowtieindex = The folder where the build bowtie index is located, the default is the Ahringer built genomes omoes folder for bwa
 # The scripts lacks logs and error handling
 # Author Steve Walsh May 2024
 ################################################################################################################################################
@@ -25,7 +28,6 @@ THREADS=1
 RUNID="PipelineRun-$(date '+%Y-%m-%d-%R')"
 MERGEID=merged
 base=null
-CALLPEAKS="true"
 
 # Function to handle incorrect arguments
 function exit_with_bad_args {
@@ -131,7 +133,7 @@ fastq_screen ${trimmedfastq_dir}/*.fq.gz  \
 echo "Carrying out BWA alignment"
 bwa mem -t ${THREADS} ${BOWTIE_INDEX} ${analysis_out_dir}/${base}/fastq/${FASTQ_ID}${MERGEID}_R1_001.fastq.gz > ${analysis_out_dir}/${base}/bwa/${base}.sam
 
-#Convert to bam, not currently downsampling to q10 by default, add as option?
+#Convert to bam, not currently downsampling to q10 by default, add as option, currnetly only full bamis kept?
 samtools view -@ ${THREADS} -b -h ${analysis_out_dir}/${base}/bwa/${base}.sam > ${analysis_out_dir}/${base}/bwa/${base}.bam
 #samtools view -@ ${THREADS} -q 10 -b -h ${analysis_out_dir}/${base}/bwa/${base}.sam > ${analysis_out_dir}/${base}/bwa/${base}.q10.bam
 
@@ -165,23 +167,22 @@ echo ${ALIGNEDNUMBER}, >> $STATSFILE
 echo ${Q30ALIGNEDNUMBER}, >> $STATSFILE
 echo ${Q10ALIGNEDREADS}, >> $STATSFILE
 
-    #Add alignment stats to stats file
-    ALIGNEDREADS=$(samtools flagstat ${analysis_out_dir}/${base}/bwa/${base}.sorted.bam)
-    Q30ALIGNEDREADS=$(samtools view -q 30 ${analysis_out_dir}/${base}/bwa/${base}.sorted.bam | wc -l )
-    Q10ALIGNEDREADS=$(samtools view -q 10 ${analysis_out_dir}/${base}/bwa/${base}.sorted.bam | wc -l )
+#Add alignment stats to stats file
+ALIGNEDREADS=$(samtools flagstat ${analysis_out_dir}/${base}/bwa/${base}.sorted.bam)
+Q30ALIGNEDREADS=$(samtools view -q 30 ${analysis_out_dir}/${base}/bwa/${base}.sorted.bam | wc -l )
+Q10ALIGNEDREADS=$(samtools view -q 10 ${analysis_out_dir}/${base}/bwa/${base}.sorted.bam | wc -l )
 
-    ALIGNEDLIST=$(awk '{print $1;}' <<< "$ALIGNEDREADS")
-    Q30ALIGNEDREADSLIST=$(awk '{print $1;}' <<< "$Q30ALIGNEDREADS")
-    Q10ALIGNEDREADSLIST=$(awk '{print $1;}' <<< "$Q10ALIGNEDREADS")
+ALIGNEDLIST=$(awk '{print $1;}' <<< "$ALIGNEDREADS")
+Q30ALIGNEDREADSLIST=$(awk '{print $1;}' <<< "$Q30ALIGNEDREADS")
+Q10ALIGNEDREADSLIST=$(awk '{print $1;}' <<< "$Q10ALIGNEDREADS")
 
-    ALIGNEDNUMBER=$(head -n 1 <<< $ALIGNEDLIST)
-    Q30ALIGNEDNUMBER=$(head -n 1 <<< $Q30ALIGNEDREADSLIST)
-    Q10ALIGNEDNUMBER=$(head -n 1 <<< $Q10ALIGNEDREADSLIST)
-    echo ${ALIGNEDNUMBER}, >> $STATSFILE
-    echo ${Q30ALIGNEDNUMBER}, >> $STATSFILE
-    echo ${Q10ALIGNEDREADS}, >> $STATSFILE
+ALIGNEDNUMBER=$(head -n 1 <<< $ALIGNEDLIST)
+Q30ALIGNEDNUMBER=$(head -n 1 <<< $Q30ALIGNEDREADSLIST)
+Q10ALIGNEDNUMBER=$(head -n 1 <<< $Q10ALIGNEDREADSLIST)
+echo ${ALIGNEDNUMBER}, >> $STATSFILE
+echo ${Q30ALIGNEDNUMBER}, >> $STATSFILE
+echo ${Q10ALIGNEDREADS}, >> $STATSFILE
 
-    #Get the bw files using deeptools
-
-    bamCoverage -p ${THREADS} -b ${analysis_out_dir}/${base}/bwa/${base}.sorted.bam -o ${analysis_out_dir}/bw/${base}.bw
+#Get the bw files using deeptools
+bamCoverage -p ${THREADS} -b ${analysis_out_dir}/${base}/bwa/${base}.sorted.bam -o ${analysis_out_dir}/bw/${base}.bw
  
