@@ -28,7 +28,7 @@ set -x
 
 #Set the defaults
 outdir=~/out
-fastq_dir=~/data/
+bam_dir=~/data/
 BOWTIE_INDEX=/mnt/home3/ahringer/index_files/built_indexes/bwa
 CHROM_SIZES=/mnt/home3/ahringer/index_files/genomes/c_elegans.PRJNA13758.WS285.genomic.chrom.sizes
 THREADS=1
@@ -56,7 +56,7 @@ while true; do
             ;;
         --input)
             shift
-            fastq_dir="$1"
+            bam_dir="$1"
             ;;
         --id)
             shift
@@ -82,6 +82,8 @@ while true; do
     shift
 done
 
+INPUT="sample_sheet_macs2.csv"
+
 CONTROL_FILE=$(head -n 1 $INPUT)
 sed -i '1d' $INPUT
 
@@ -89,3 +91,20 @@ analysis_out_dir=${outdir}/${RUNID}
 
 mkdir ${analysis_out_dir}/MACS2
 
+while IFS= read -r LINE 
+do
+
+    # split line into array using tab delimitator - 0: FASTQ: FASTQ FILE SAMPLE_NAME: Name of sample (If changing from fastq file name)
+    #echo ${var1}
+    ARRAYLINE=(${LINE//,/ })
+    BAM_FILE=${ARRAYLINE[0]}
+
+    mkdir ${analysis_out_dir}/MACS2/${BAM_FILE}
+    cd ${analysis_out_dir}/MACS2/${BAM_FILE}
+
+    srun --mem=10000MB --cpus-per-task=6 --ntasks=1 macs2 callpeak -c ${bam_dir}/${CONTROL_FILE}.sorted.bam -t ${bam_dir}/${BAM_FILE}.sorted.bam -f BAM --threads ${THREADS} -n ${BAM_FILE} &
+
+done < ${INPUT}
+
+#Wait for all pipelines to finish
+wait
