@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --job-name=RNASeq  
-#SBATCH --nodes=1
-#SBATCH --ntasks=20
-#SBATCH --cpus-per-task=6
-#SBATCH --mem=50gb
+#SBATCH --job-name=CHIPSeq  
+#SBATCH --nodes=6
+#SBATCH --ntasks=60
+#SBATCH --cpus-per-task=12
+#SBATCH --mem=100gb
 #SBATCH --partition=2004
 #SBATCH --output=pipeline_%j.log # Standard output and error log
 
