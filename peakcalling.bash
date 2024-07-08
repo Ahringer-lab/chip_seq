@@ -8,7 +8,7 @@
 #SBATCH --output=pipeline_%j.log # Standard output and error log
 
 ##########################################################################################################################################################################
-############################## bulk rna-seq sbatch job submission script with a sample sheet #############################################################################
+############################## peak calling sbatch script froma sample sheet #############################################################################
 # This code will gather all the bam file names listed in the bam sample sheet from the input folder into an array to initiate pipeline runs for each one in the HPC
 # The control bam is entered at the top of the sample sheet
 # *****This script ideally should be initiated from the main pipeline but this requires further work**********
@@ -21,6 +21,7 @@
 #      input = Change the path of the input fastq files, default is ~/data
 #      id = Change the name of the parent pipeline output folder, the default is a datestamp
 # This only uses the default macs2 settings, options can be added as required
+# If this is intitated from the main script, you would not reauire the while loop, maybe an if statement for how it is being used
 # Author Steve Walsh May 2024
 ###########################################################################################################################################################################
 
