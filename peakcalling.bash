@@ -92,7 +92,11 @@ do
     mkdir ${analysis_out_dir}/MACS2/${BAM_FILE}
     cd ${analysis_out_dir}/MACS2/${BAM_FILE}
 
-    srun --mem=10000MB --cpus-per-task=6 --ntasks=1 macs2 callpeak -c ${bam_dir}/${CONTROL_FILE}.sorted.bam -t ${bam_dir}/${BAM_FILE}.sorted.bam -f BAM -n ${BAM_FILE} &
+    if [[ ${CONTROL_FILE} == "none" ]]; then
+        srun --mem=10000MB --cpus-per-task=6 --ntasks=1 macs2 callpeak  -t ${bam_dir}/${BAM_FILE}.sorted.bam -f BAM -n ${BAM_FILE} &
+    else
+        srun --mem=10000MB --cpus-per-task=6 --ntasks=1 macs2 callpeak -c ${bam_dir}/${CONTROL_FILE}.sorted.bam -t ${bam_dir}/${BAM_FILE}.sorted.bam -f BAM -n ${BAM_FILE} &
+    fi
 
 done < ${INPUT}
 
