@@ -70,15 +70,16 @@ while true; do
     shift
 done
 
-INPUT="sample_sheet_macs2.csv"
+analysis_out_dir=${outdir}/${RUNID}
+mkdir ${analysis_out_dir}/
+mkdir ${analysis_out_dir}/MACS2
+
+cp sample_sheet_macs2.csv ${analysis_out_dir}/sample_sheet_macs2_${RUNID}.csv
+INPUT=${analysis_out_dir}/sample_sheet_macs2_${RUNID}.csv
 
 #Get the control bam file from the first line of bam sample sheet
 CONTROL_FILE=$(head -n 1 $INPUT)
 sed -i '1d' $INPUT
-
-analysis_out_dir=${outdir}/${RUNID}
-
-mkdir ${analysis_out_dir}/MACS2
 
 while IFS= read -r LINE 
 do
