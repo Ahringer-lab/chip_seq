@@ -184,5 +184,5 @@ echo ${Q30ALIGNEDNUMBER}, >> $STATSFILE
 echo ${Q10ALIGNEDREADS}, >> $STATSFILE
 
 #Get the bw files using deeptools
-bamCoverage -p ${THREADS} -b ${analysis_out_dir}/${base}/bwa/${base}.sorted.bam -o ${analysis_out_dir}/bw/${base}.bw
+bamCoverage -p ${THREADS} --normalizeUsing CPM -bs 50 -b ${analysis_out_dir}/${base}/bwa/${base}.sorted.bam -o ${analysis_out_dir}/bw/${base}.bw
  
