@@ -1,10 +1,10 @@
 #!/bin/bash
 #SBATCH --job-name=CHIPseq
-#SBATCH --nodes=1
-#SBATCH --ntasks=20
-#SBATCH --cpus-per-task=12
-#SBATCH --mem=50gb
+#SBATCH --nodes=2
+#SBATCH --ntasks=40
+#SBATCH --cpus-per-task=6
 #SBATCH --partition=2004
+#SBATCH --mem=50gb
 #SBATCH --output=pipeline_%j.log # Standard output and error log
 
 ##########################################################################################################################################################################

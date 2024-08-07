@@ -146,7 +146,7 @@ do
 
 #Loops through the fastq names, make directories for each output, ${base} holds the sample id (TODO Chane $base to something else)
 
-    srun --mem=10000MB --cpus-per-task=6 --ntasks=1 ./chip_seq_alignment.bash --fastqid ${FASTQ} --sampleid ${SAMPLE_NAME} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --bowtieindex ${BOWTIE_INDEX} &
+    srun --mem=10000MB --cpus-per-task=6 --ntasks=1 ./chip_seq_alignment.bash --fastqid ${FASTQ} --sampleid ${SAMPLE_NAME} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --bwaindex ${BOWTIE_INDEX} &
 
 #Carry out peak calling
 #Ideally the fastq file that have been aligned would be peak called here, this requires organising the control and treatment files correctly, see code above
