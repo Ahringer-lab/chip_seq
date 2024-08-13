@@ -35,7 +35,7 @@
 #Set the defaults
 outdir=~/out
 fastq_dir=~/data/
-BOWTIE_INDEX=/mnt/home3/ahringer/index_files/built_indexes/bwa/c_elegans.PRJNA13758.WS285/c_elegans.PRJNA13758.WS285.genomic.fa
+BWA_INDEX=/mnt/home3/ahringer/index_files/built_indexes/bwa/c_elegans.PRJNA13758.WS285/c_elegans.PRJNA13758.WS285.genomic.fa
 CHROM_SIZES=/mnt/home3/ahringer/index_files/genomes/c_elegans.PRJNA13758.WS285.genomic.chrom.sizes
 THREADS=1
 RUNID="PipelineRun-$(date '+%Y-%m-%d-%R')"
@@ -45,13 +45,13 @@ SAMPLE_NAME=null
 
 # Function to handle incorrect arguments
 function exit_with_bad_args {
-    echo "Usage: bash chip_seq_alignment.bash optional args: --threads <number of threads> --input <input path> --id <Run ID> --mergeID <merge ID> --bowtie_index"
+    echo "Usage: bash chip_seq_alignment.bash optional args: --threads <number of threads> --input <input path> --id <Run ID> --mergeID <merge ID> --bwa_index"
     echo "Invalid arguments provided" >&2
     exit # this stops the terminal closing when run as source
 }
 
 #Set the possible input options
-options=$(getopt -o '' -l threads: -l input: -l id: -l mergeID -l bowtieindex: -- "$@") || exit_with_bad_args
+options=$(getopt -o '' -l threads: -l input: -l id: -l mergeID -l bwa_index: -- "$@") || exit_with_bad_args
 
 #Get the inputs
 eval set -- "$options"
@@ -73,9 +73,9 @@ while true; do
             shift
             MERGEID="$1"
             ;;
-        --bowtieindex)
+        --bwa_index)
             shift
-            BOWTIE_INDEX="$1"
+            BWA_INDEX="$1"
             ;;
          --)
             shift
@@ -146,7 +146,7 @@ do
 
 #Loops through the fastq names, make directories for each output, ${base} holds the sample id (TODO Chane $base to something else)
 
-    srun --mem=10000MB --cpus-per-task=6 --ntasks=1 ./chip_seq_alignment.bash --fastqid ${FASTQ} --sampleid ${SAMPLE_NAME} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --bwaindex ${BOWTIE_INDEX} &
+    srun --mem=10000MB --cpus-per-task=6 --ntasks=1 ./chip_seq_alignment.bash --fastqid ${FASTQ} --sampleid ${SAMPLE_NAME} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --bwaindex ${BWA_INDEX} &
 
 #Carry out peak calling
 #Ideally the fastq file that have been aligned would be peak called here, this requires organising the control and treatment files correctly, see code above
