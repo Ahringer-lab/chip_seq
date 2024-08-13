@@ -1,10 +1,10 @@
 #!/bin/bash
-#SBATCH --job-name=CHIPseq
-#SBATCH --nodes=2
-#SBATCH --ntasks=40
-#SBATCH --cpus-per-task=6
+#SBATCH --job-name=Bam2BW
+#SBATCH --nodes=1
+#SBATCH --ntasks=25
+#SBATCH --cpus-per-task=4
 #SBATCH --partition=2004
-#SBATCH --mem=50gb
+#SBATCH --mem=40gb
 #SBATCH --output=pipeline_%j.log # Standard output and error log
 
 ##########################################################################################################################################################################
@@ -71,6 +71,9 @@ analysis_out_dir=${outdir}/${RUNID}
 mkdir ${analysis_out_dir}/
 mkdir ${analysis_out_dir}/BW
 
+cp sample_sheet_bw.csv ${analysis_out_dir}/sample_sheet_bw_${RUNID}.csv
+INPUT=${analysis_out_dir}/sample_sheet_bw_${RUNID}.csv
+
 while IFS= read -r LINE 
 do
 
@@ -79,9 +82,6 @@ do
     ARRAYLINE=(${LINE//,/ })
     BAM_FILE=${ARRAYLINE[0]}
 
-    #Make directories for the peak call fileds as we go
-    mkdir ${analysis_out_dir}/BW/${BAM_FILE}
-
-    bamCoverage -p ${THREADS} --normalizeUsing CPM -bs 50 -b ${bam_dir}/${BAM_FILE}.sorted.bam -o ${analysis_out_dir}/bw/${BAM_FILE}.bw
+    bamCoverage -p ${THREADS} --normalizeUsing CPM -bs 10 -b ${bam_dir}/${BAM_FILE}.sorted.bam -o ${analysis_out_dir}/BW/${BAM_FILE}.bw
 
 done < ${INPUT}
