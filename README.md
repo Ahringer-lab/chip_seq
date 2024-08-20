@@ -24,6 +24,10 @@ conda env create -f environment.yml
 
 ### Running the pipeline main pipeline
 
+First switch to the correct conda environment:
+
+conda activate RNA-Seq
+
 Drop all files into the data folder, by default the pipeline will take files with the following format:
 
 <my_fastq>_merged_R1/2_001.fastq.gz
