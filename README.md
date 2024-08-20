@@ -55,6 +55,8 @@ The following flags can be used to change the behaviour of the pipeline:
 
 --bwa_index : Change the dedault location of the bwa index from /mnt/home3/ahringer/index_files/built_indexes/bwa/c_elegans.PRJNA13758.WS285/c_elegans.PRJNA13758.WS285.genomic.fa
 
+N.B The defaul index is built from the c_elegans.PRJNA13758.WS285.genomic.fa file from Wormbase
+
 ### Output
 
 All files will be ouput to the out directory in your home directory, there will be a folder for each sample that contains the following folders:
