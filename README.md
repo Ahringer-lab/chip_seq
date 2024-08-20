@@ -26,7 +26,7 @@ conda env create -f environment.yml
 
 First switch to the correct conda environment:
 
-conda activate RNA-Seq
+conda activate CHIP-Seq
 
 Drop all files into the data folder, by default the pipeline will take files with the following format:
 
