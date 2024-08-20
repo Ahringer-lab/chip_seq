@@ -8,13 +8,15 @@ The peakcalling pipeline can be used to call peaks using MACS2 on BAM files
 
 ### Install
 
-To use these pipelines first clone the repository into your home directory on the cluster.
+To use these pipelines first clone the repository into your home directory on the cluster as follows:
+
+git clone https://github.com/Ahringer-lab/bulk_rna_seq.git
 
 Then create two directories in your home directory:
 
-* Data
+* data
 
-* Out
+* out
 
 Finally clone the conda environment as below:
 
@@ -57,6 +59,9 @@ All files will be ouput to the out directory in your home directory, there will 
 * fastq_screen  
 * bwa  
 * trim_galore
+* bw
+
+N.B default settings are used for all programs and bigwigs are created with a bin size of 10 and normalised by counts per million (CPM), the reads are not shifted or extended.
 
 The fastq folder contains a copy of the fastq files used (as a point of reference to check back) and the other folders contain the output of the respective programs.
 
